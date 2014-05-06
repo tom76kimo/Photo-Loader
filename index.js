@@ -1,10 +1,32 @@
 var page = require('webpage').create();
-var execFile = require("child_process").execFile
+var execFile = require("child_process").execFile;
+var Promise = require('es6-promise').Promise;
 page.viewportSize = {
   width: 1024,
   height: 768
 };
 
+
+var photoLoader = {};
+photoLoader.root = 'http://172.17.22.21/photo/requireP/#album/admin/mB7k4u';
+photoLoader.step = [];
+photoLoader.step[0] = {
+    condition: function () {
+        return ($('.fadeFilter').css('display') === 'none');
+    }, nextStep: function () {
+        console.log('load ready...');
+        $('.thumbnail').first().click();
+    }
+};
+
+photoLoader.step[1] = {
+    condition: function () {
+        return ($('.fadeFilter').css('display') === 'none');
+    }, nextStep: function () {
+        console.log('load ready...');
+        $('.thumbnail').first().click();
+    }
+};
 
 /**
  * Wait until the test condition is true or a timeout occurs. Useful for waiting
@@ -41,23 +63,34 @@ function waitFor(testFx, onReady, timeOutMillis) {
         }, 250); //< repeat check every 250ms
 }
 
-var util = {};
-util.getImgDimensions = function ($element) {
-    return {
-        top : $element.offset().top,
-        left : $element.offset().left,
-        width : $element.width(),
-        height : $element.height()
-    };
-};
-
 var fs = require('fs');
 page.onConsoleMessage = function (msg) {
     console.log(msg);
 };
 
-// Open Twitter on 'sencha' profile and, onPageLoad, do...
+var iindex = 0;
+var readyIndex = 1;
+var exec = false;
+
+//while (iindex < photoLoader.step.length);
+
 page.open("http://172.17.22.21/photo/requireP/#album/admin/mB7k4u", function (status) {
+    //TODO
+    waitFor(function () {
+        return page.evaluate(photoLoader.step[iindex].condition);
+    }, function () {
+        if (photoLoader.step[iindex].nextStep) {
+            page.evaluate(photoLoader.step[iindex].nextStep);
+            iindex++;
+        }
+    });
+
+});
+
+if (0) {
+   // Open Twitter on 'sencha' profile and, onPageLoad, do...
+page.open("http://172.17.22.21/photo/requireP/#album/admin/mB7k4u", function (status) {
+
     waitFor(function () {
         // Check in the page if a specific element is now visible
         return page.evaluate(function () {
@@ -90,43 +123,8 @@ page.open("http://172.17.22.21/photo/requireP/#album/admin/mB7k4u", function (st
                     console.log('image downloaded!!');
                     phantom.exit();
                 });
-                /*
-                page.open(src, function () {
-                    console.log('open new one ok!');
-                    page.includeJs('//code.jquery.com/jquery-1.11.0.min.js', function () {
-                        var firstElement = page.evaluate(function () {
-                            var getImgDimensions = function ($element) {
-                                return {
-                                    top : $element.offset().top,
-                                    left : $element.offset().left,
-                                    width : $element.width(),
-                                    height : $element.height()
-                                };
-                            };
-                            return getImgDimensions($('img').first());
-                        });
-                        page.clipRect = firstElement;
-                        page.render('result.jpg');
-                    });
-
-                });*/
             });
         });
-        /*
-        var firstElement = page.evaluate(function () {
-            $('.thumbnail').first().click();
-            var getImgDimensions = function ($element) {
-                return {
-                    top : $element.offset().top,
-                    left : $element.offset().left,
-                    width : $element.width(),
-                    height : $element.height()
-                };
-            };
-            return getImgDimensions($('.thumbnail').first());
-        });
-        page.clipRect = firstElement;
-        page.render('result.jpg');*/
-        
     });
-});
+}); 
+}
